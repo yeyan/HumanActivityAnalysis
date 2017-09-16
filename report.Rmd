@@ -89,18 +89,20 @@ model.acc(predicted, testing.clean$classe)
 As we see int the following picture, most prediction and reality are agree with eachother. 
 ```{r}
 ggplot(data.frame(Predicted=predicted, Actual=testing.clean$classe), aes(Predicted, Actual)) +
-  geom_point(alpha=.008) +
+  geom_point(alpha=.008, color='blue') +
   labs(title = 'Prediction VS Reality')
 ```
 
 ### Prediction with Testset
 
-```{r}
+```{r, warning=F, message=F}
 validating <- read_csv('pml-testing.csv') %>%
   select(features$name, -new_window) %>%
   mutate(user_name=factor(user_name))
 
-validating = predict(prepro, validating)
+```
 
+```{r}
+validating = predict(prepro, validating)
 predict(m1, validating)
 ```

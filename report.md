@@ -182,7 +182,7 @@ model.acc(predict(m1, training.clean), training.clean$classe)
 ```
 
 ```
-## [1] 0.9385446
+## [1] 0.9397676
 ```
 
 Out sample accuarcy estimation:
@@ -196,14 +196,14 @@ model.acc(predicted, testing.clean$classe)
 ```
 
 ```
-## [1] 0.9256881
+## [1] 0.9314985
 ```
 
 As we see int the following picture, most prediction and reality are agree with eachother. 
 
 ```r
 ggplot(data.frame(Predicted=predicted, Actual=testing.clean$classe), aes(Predicted, Actual)) +
-  geom_point(alpha=.008) +
+  geom_point(alpha=.008, color='blue') +
   labs(title = 'Prediction VS Reality')
 ```
 
@@ -218,45 +218,9 @@ validating <- read_csv('pml-testing.csv') %>%
   mutate(user_name=factor(user_name))
 ```
 
-```
-## Warning: Missing column names filled in: 'X1' [1]
-```
-
-```
-## Parsed with column specification:
-## cols(
-##   .default = col_character(),
-##   X1 = col_integer(),
-##   raw_timestamp_part_1 = col_integer(),
-##   raw_timestamp_part_2 = col_integer(),
-##   num_window = col_integer(),
-##   roll_belt = col_double(),
-##   pitch_belt = col_double(),
-##   yaw_belt = col_double(),
-##   total_accel_belt = col_integer(),
-##   gyros_belt_x = col_double(),
-##   gyros_belt_y = col_double(),
-##   gyros_belt_z = col_double(),
-##   accel_belt_x = col_integer(),
-##   accel_belt_y = col_integer(),
-##   accel_belt_z = col_integer(),
-##   magnet_belt_x = col_integer(),
-##   magnet_belt_y = col_integer(),
-##   magnet_belt_z = col_integer(),
-##   roll_arm = col_double(),
-##   pitch_arm = col_double(),
-##   yaw_arm = col_double()
-##   # ... with 37 more columns
-## )
-```
-
-```
-## See spec(...) for full column specifications.
-```
 
 ```r
 validating = predict(prepro, validating)
-
 predict(m1, validating)
 ```
 

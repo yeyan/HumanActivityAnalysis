@@ -1,0 +1,106 @@
+---
+title: "Week4 Project"
+output:
+    html_document:
+      keep_md: TRUE
+---
+
+```{r setup, include=FALSE, cache=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Human Actitivity Data Analysis
+
+For reproduciblity concern all the libraries use this in analysis is listed below:
+
+```{r, message=F}
+library(tidyverse)
+library(caret)
+library(e1071)
+```
+
+## Data Explorer
+
+```{r, message=F, warning=F}
+raw.data <- read_csv('pml-training.csv') %>%
+  mutate(user_name=factor(user_name), classe=as.factor(classe))
+```
+### Feature selection
+
+Brief view about our dataset.
+```{r}
+str(raw.data)
+```
+
+Our dataset contains two types of variables. One type contains almost 100% data, the other type missing rate can reach 97%. An arbitary 10% missing rate cut off is employed to select features. And also time related feature and index are droped.
+
+```{r}
+fields <- Reduce(rbind, lapply(colnames(raw.data),
+                               function(name) data.frame(
+                                 name=name,
+                                 rate=mean(is.na(raw.data[[name]])))
+                               ))
+features <- fields %>%
+  filter(rate < .1) %>%
+  filter(!grepl('time', name)) %>%
+  filter(!grepl('X1', name))
+
+data = select(raw.data, features$name, -new_window)
+```
+
+### Split dataset
+
+Split data set into training and testing set.
+
+```{r}
+inTrain <- createDataPartition(data$classe, p=.5, list=F)
+
+training = data[inTrain,]
+testing = data[-inTrain,]
+```
+
+### Model training
+
+```{r}
+prepro <- preProcess(training, method=c('medianImpute', 'center', 'scale'), thresh=.8) 
+training.clean = predict(prepro, training)
+
+m1 <- svm(classe ~ ., training.clean)
+```
+
+Optimistic accuracy:
+```{r}
+model.acc <- function(x, y) {
+  1/length(y) * sum(y == x)
+}
+
+model.acc(predict(m1, training.clean), training.clean$classe)
+```
+
+Out sample accuarcy estimation:
+```{r}
+testing.clean = predict(prepro, testing)
+
+predicted = predict(m1, testing.clean) 
+
+model.acc(predicted, testing.clean$classe)
+```
+
+As we see int the following picture, most prediction and reality are agree with eachother. 
+```{r}
+ggplot(data.frame(Predicted=predicted, Actual=testing.clean$classe), aes(Predicted, Actual)) +
+  geom_point(alpha=.008) +
+  labs(title = 'Prediction VS Reality')
+```
+
+### Prediction with Testset
+
+```{r}
+validating <- read_csv('pml-testing.csv') %>%
+  select(features$name, -new_window) %>%
+  mutate(user_name=factor(user_name))
+
+validating = predict(prepro, validating)
+
+predict(m1, validating)
+```
